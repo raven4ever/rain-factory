@@ -28,6 +28,16 @@ output "online_archives" {
   }
 }
 
+output "sql_federation" {
+  description = "Map of Federated Database Instance key to name + hostnames. Use with Atlas SQL JDBC/ODBC driver."
+  value = {
+    for k, f in mongodbatlas_federated_database_instance.this : k => {
+      name      = f.name
+      hostnames = try(f.hostnames, null)
+    }
+  }
+}
+
 output "clusters" {
   description = "Map of cluster key to SRV connection string (null until cluster created)."
   value = {

@@ -52,3 +52,19 @@ network:
 #         order: 0
 #       - fieldName: createdAt
 #         order: 1
+
+# Optional: Atlas SQL Interface via Data Federation. Paid Atlas feature.
+# Connect using the Atlas SQL JDBC/ODBC driver (not the standard mongo driver).
+# sqlFederation:
+#   - name: dev-fdi
+#     stores:
+#       - name: primary-store
+#         clusterName: primary       # references clusters[].name in this file
+#     databases:
+#       - name: sql_app
+#         collections:
+#           - name: events
+#             dataSources:
+#               - storeName: primary-store
+#                 database: app
+#                 collection: events

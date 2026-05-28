@@ -62,4 +62,14 @@ locals {
       "${env_key}-${oa.clusterName}-${oa.database}-${oa.collection}" => merge(oa, { envKey = env_key })
     }
   ]...)
+
+  # Atlas SQL Interface via Data Federation. Optional per-project. One
+  # Federated Database Instance per sqlFederation[] entry. Cluster references
+  # in stores[].clusterName resolve against clusters_flat by envKey-clusterName.
+  sql_federation_flat = merge([
+    for env_key, p in local.projects : {
+      for fdi in lookup(p, "sqlFederation", []) :
+      "${env_key}-${fdi.name}" => merge(fdi, { envKey = env_key })
+    }
+  ]...)
 }
