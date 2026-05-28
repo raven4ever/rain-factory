@@ -52,7 +52,7 @@ resource "mongodbatlas_database_user" "this" {
   username           = each.value.username
   auth_database_name = each.value.authType == "AWS_IAM" ? "$external" : "admin"
   password           = each.value.authType == "SCRAM" ? lookup(var.user_passwords, each.value.username, null) : null
-  aws_iam_type       = each.value.authType == "AWS_IAM" ? "USER" : "NONE"
+  aws_iam_type       = each.value.authType == "AWS_IAM" ? "USER" : null
 
   dynamic "roles" {
     for_each = each.value.roles
