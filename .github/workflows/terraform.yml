@@ -1,5 +1,11 @@
 name: Terraform
 
+# VCS-connected TFC workspaces auto-trigger speculative plans on PR and
+# plans on push-to-main via webhook from GitHub. This workflow does NOT
+# run `terraform plan` — TFC owns plan/apply. GHA only enforces fmt and
+# validate as fast pre-flight checks so obvious syntax errors fail before
+# TFC ever picks up the commit.
+
 on:
   pull_request:
     paths:
@@ -11,20 +17,20 @@ on:
     paths:
       - "terraform/**"
       - "orgs/**"
-  workflow_dispatch:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
-  fmt-validate:
+  lint:
     name: fmt + validate
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: terraform
     env:
+      # Required because the `cloud {}` block in versions.tf forces
+      # `terraform init` to contact app.terraform.io even with -backend=false.
       TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
     steps:
       - uses: actions/checkout@v6
@@ -35,38 +41,3 @@ jobs:
       - run: terraform fmt -check -recursive
       - run: terraform init -backend=false
       - run: terraform validate
-
-  plan:
-    name: plan (${{ matrix.org }})
-    needs: fmt-validate
-    runs-on: ubuntu-latest
-    # NOTE: until S3 backend wired (Phase 5b), CI uses local backend — every PR
-    # shows a full creation plan because state is discarded at job end. Keep
-    # informational only; do not gate merges on this output yet.
-    concurrency:
-      group: terraform-${{ matrix.org }}
-      cancel-in-progress: false
-    strategy:
-      fail-fast: false
-      matrix:
-        org: [org1]
-    defaults:
-      run:
-        working-directory: terraform
-    env:
-      # TFC API token (authenticates `terraform init` against app.terraform.io).
-      # All Atlas secrets (atlas_public_key, atlas_private_key,
-      # federation_settings_id, user_passwords) live in the TFC workspace as
-      # sensitive Terraform variables — not in GitHub secrets.
-      TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: hashicorp/setup-terraform@v4
-        with:
-          terraform_version: 1.15.5
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-      - run: terraform init
-      - run: terraform workspace select ${{ matrix.org }} || terraform workspace new ${{ matrix.org }}
-      - id: plan
-        run: terraform plan -no-color -input=false
-        continue-on-error: false
