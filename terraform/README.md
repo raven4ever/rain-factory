@@ -169,6 +169,47 @@ Point Atlas SQL JDBC driver at the returned hostname.
 
 Remove the YAML entry and apply to delete the FDI.
 
+## Multi-region clusters
+
+Each cluster YAML entry supports an optional `regions[]` list for production HA across regions. When `regions:` is present, the top-level `provider` / `region` / `instanceSize` are ignored and one `region_config` is emitted per list entry.
+
+**YAML (multi-region):**
+
+```yaml
+clusters:
+  - name: primary
+    mongoVersion: "7.0"
+    diskSizeGB: 20
+    backup: true
+    regions:
+      - region: US_EAST_1
+        provider: AWS
+        priority: 7              # preferred primary — exactly one region must be 7
+        instanceSize: M10
+        electableNodes: 3
+      - region: EU_WEST_1
+        provider: AWS
+        priority: 6              # electable secondary
+        instanceSize: M10
+        electableNodes: 2
+      - region: US_WEST_2
+        provider: AWS
+        priority: 0              # read-only tier (priority 0 cannot become primary)
+        instanceSize: M10
+        readOnlyNodes: 1
+```
+
+**Atlas-enforced rules:**
+
+- `priority` is an integer 0–7; exactly one region must have `priority = 7`
+- Sum of `electableNodes` across all regions should be **odd** (quorum)
+- Nodes with `priority = 0` can host only read-only or analytics nodes
+- `readOnlyNodes` and `analyticsNodes` are optional per region
+
+**Single-region (legacy) form** continues to work — leave `regions:` out and use top-level `region`, `provider`, `instanceSize`.
+
+Cross-region clusters add latency and inter-region traffic cost. Use only for production HA needs.
+
 ## Workspace Guard
 
 Root refuses to run in `default` workspace and refuses if `../orgs/<workspace>/org.yaml` is missing. Create a workspace whose name matches the org directory.

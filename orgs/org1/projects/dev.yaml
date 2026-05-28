@@ -9,6 +9,25 @@ clusters:
     mongoVersion: "7.0"
     diskSizeGB: 20
     backup: true
+    # Optional multi-region replica set. When `regions:` is present, the
+    # top-level provider/region/instanceSize are ignored. Exactly one region
+    # must have priority=7; sum of electableNodes across regions should be odd.
+    # regions:
+    #   - region: US_EAST_1
+    #     provider: AWS
+    #     priority: 7
+    #     instanceSize: M10
+    #     electableNodes: 3
+    #   - region: EU_WEST_1
+    #     provider: AWS
+    #     priority: 6
+    #     instanceSize: M10
+    #     electableNodes: 2
+    #   - region: US_WEST_2
+    #     provider: AWS
+    #     priority: 0
+    #     instanceSize: M10
+    #     readOnlyNodes: 1
 users:
   - username: app-dev
     authType: SCRAM
