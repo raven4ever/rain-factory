@@ -1,5 +1,5 @@
 resource "mongodbatlas_advanced_cluster" "this" {
-  # for_each = local.clusters_flat
+  for_each = local.clusters_flat
 
   project_id             = mongodbatlas_project.this[each.value.envKey].id
   name                   = each.value.name

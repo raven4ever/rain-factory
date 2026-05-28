@@ -5,7 +5,7 @@ template: small-dev
 # Template small-dev defines primary as M10 / 20GB / backup=false; here we
 # bump disk and enable backup. Other cluster fields inherit from template.
 clusters:
-  - name: my-super-cluster
+  - name: primary
     backup: true
 
 users:
