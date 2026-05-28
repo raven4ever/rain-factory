@@ -1,5 +1,7 @@
 # Rain Factory
 
+> When it rains, the Atlas leaves grow — every commit waters new clusters into existence.
+
 GitOps control plane for MongoDB Atlas at enterprise scale. Atlas organizations, projects, clusters, users, network access, federation, PrivateLink endpoints, and SQL federation — declared in YAML, applied by Terraform Cloud on every push.
 
 ## Repo layout
