@@ -10,11 +10,6 @@ output "projects" {
   }
 }
 
-output "debug_project_files" {
-  description = "Temp diagnostic: paths returned by fileset() for the active workspace. Remove once verified."
-  value       = local.project_files
-}
-
 output "clusters" {
   description = "Map of cluster key to SRV connection string (null until cluster created)."
   value = {
