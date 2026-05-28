@@ -61,6 +61,42 @@ terraform plan -out=tfplan
 terraform apply tfplan
 ```
 
+## PrivateLink
+
+Each project YAML may declare an optional `privateLink` list. Each entry creates an Atlas-side PrivateLink endpoint service per region. Customer-owned AWS resources (VPC endpoint, security group) are intentionally **out of scope** — this Terraform root only manages Atlas.
+
+### YAML
+
+```yaml
+privateLink:
+  - region: US_EAST_1            # Atlas region
+    providerName: AWS
+    awsEndpointId: ""             # empty on first apply; "vpce-..." on second
+```
+
+### Two-phase apply
+
+**Phase 1 — create Atlas service.** Leave `awsEndpointId: ""`. Apply.
+```bash
+terraform apply
+terraform output privatelink
+```
+Output contains `endpoint_service_name` per region. Example:
+```
+com.amazonaws.vpce.us-east-1.vpce-svc-0abc1234...
+```
+
+**Phase 2 — customer creates AWS-side resources.** In the customer AWS account (any IaC or AWS Console):
+1. Create a security group: ingress from your allowed CIDRs on TCP 1024–65535, egress open
+2. Create an Interface VPC Endpoint targeting the Atlas `endpoint_service_name`, attached to your subnets and the SG
+3. Note the resulting `vpce-...` endpoint ID
+
+**Phase 3 — bind the AWS endpoint to Atlas.** Paste the `vpce-...` ID into the project YAML under `awsEndpointId`. Apply again — terraform creates the binding via `mongodbatlas_privatelink_endpoint_service`.
+
+### Removing PrivateLink
+
+Remove the `privateLink` entry from YAML and apply. Atlas-side service is destroyed. Customer must separately delete their AWS VPC endpoint and SG.
+
 ## Workspace Guard
 
 Root refuses to run in `default` workspace and refuses if `../orgs/<workspace>/org.yaml` is missing. Create a workspace whose name matches the org directory.

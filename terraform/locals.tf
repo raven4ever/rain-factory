@@ -41,4 +41,14 @@ locals {
       "${env_key}-${replace(n.cidr, "/", "_")}" => merge(n, { envKey = env_key })
     }
   ]...)
+
+  # PrivateLink endpoints. Optional per-project. Each entry creates an
+  # Atlas-side endpoint service; the customer-owned AWS VPC endpoint + SG
+  # are created out-of-band. Set awsEndpointId on the second apply to bind.
+  private_link_flat = merge([
+    for env_key, p in local.projects : {
+      for pl in lookup(p, "privateLink", []) :
+      "${env_key}-${pl.region}" => merge(pl, { envKey = env_key })
+    }
+  ]...)
 }

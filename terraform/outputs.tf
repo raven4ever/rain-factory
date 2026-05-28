@@ -10,6 +10,17 @@ output "projects" {
   }
 }
 
+output "privatelink" {
+  description = "Per-region Atlas PrivateLink service info. Customer uses endpoint_service_name to create their AWS VPC endpoint, then pastes the resulting vpce-... back into the project YAML under awsEndpointId for a second apply."
+  value = {
+    for k, e in mongodbatlas_privatelink_endpoint.this : k => {
+      endpoint_service_name = e.endpoint_service_name
+      private_link_id       = e.private_link_id
+      region                = e.region
+    }
+  }
+}
+
 output "clusters" {
   description = "Map of cluster key to SRV connection string (null until cluster created)."
   value = {

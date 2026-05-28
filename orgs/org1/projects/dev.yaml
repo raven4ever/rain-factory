@@ -31,3 +31,10 @@ network:
   ipAccessList:
     - cidr: 10.0.0.0/8
       comment: corp-vpn
+
+# Optional: pair the project with a customer AWS account via PrivateLink.
+# Two-phase apply — see terraform/README.md → "PrivateLink".
+# privateLink:
+#   - region: US_EAST_1            # Atlas region
+#     providerName: AWS
+#     awsEndpointId: ""             # paste "vpce-..." after creating the AWS VPC endpoint
