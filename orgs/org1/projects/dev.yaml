@@ -1,0 +1,21 @@
+name: org1-dev
+env: dev
+awsAccount: "123456789012"
+clusters:
+  - name: primary
+    provider: AWS
+    region: US_EAST_1
+    instanceSize: M10
+    mongoVersion: "7.0"
+    diskSizeGB: 20
+    backup: true
+users:
+  - username: app-dev
+    authType: SCRAM
+    roles:
+      - role: readWrite
+        database: app
+network:
+  ipAccessList:
+    - cidr: 10.0.0.0/8
+      comment: corp-vpn

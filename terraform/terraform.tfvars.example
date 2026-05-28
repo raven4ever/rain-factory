@@ -1,0 +1,13 @@
+# Copy to terraform.tfvars (gitignored) and fill in, OR source via TF_VAR_* env vars.
+# Never commit terraform.tfvars containing real credentials.
+
+# atlas_public_key  = "xxxxxxxx"
+# atlas_private_key = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# Required only for Phase 3 SCRAM users:
+# user_passwords = {
+#   "app-dev" = "change-me"
+# }
+
+# Required only for Phase 4 federation:
+# federation_settings_id = "5fxxxxxxxxxxxxxxxxxxxxxx"

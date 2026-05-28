@@ -1,0 +1,65 @@
+name: Terraform
+
+on:
+  pull_request:
+    paths:
+      - 'terraform/**'
+      - 'orgs/**'
+      - '.github/workflows/terraform.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+      - 'orgs/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  fmt-validate:
+    name: fmt + validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.5
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false
+      - run: terraform validate
+
+  plan:
+    name: plan (${{ matrix.org }})
+    needs: fmt-validate
+    runs-on: ubuntu-latest
+    # NOTE: until S3 backend wired (Phase 5b), CI uses local backend — every PR
+    # shows a full creation plan because state is discarded at job end. Keep
+    # informational only; do not gate merges on this output yet.
+    concurrency:
+      group: terraform-${{ matrix.org }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix:
+        org: [org1]
+    defaults:
+      run:
+        working-directory: terraform
+    env:
+      TF_VAR_atlas_public_key: ${{ secrets.MONGODB_ATLAS_PUBLIC_KEY }}
+      TF_VAR_atlas_private_key: ${{ secrets.MONGODB_ATLAS_PRIVATE_KEY }}
+      TF_VAR_federation_settings_id: ${{ secrets.MONGODB_ATLAS_FEDERATION_SETTINGS_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.5
+      - run: terraform init
+      - run: terraform workspace select ${{ matrix.org }} || terraform workspace new ${{ matrix.org }}
+      - id: plan
+        run: terraform plan -no-color -input=false
+        continue-on-error: false

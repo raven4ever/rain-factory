@@ -1,0 +1,8 @@
+orgId: "5f0000000000000000000000"
+name: org1
+federation:
+  enabled: false
+  roleMappings: []
+tags:
+  costCenter: "1234"
+  team: platform
