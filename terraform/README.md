@@ -4,23 +4,16 @@ Single-root Terraform managing MongoDB Atlas orgs declared in `../orgs/`. State 
 
 ## Prerequisites
 
-- Terraform >= 1.6
+- Terraform >= 1.15.5
 - MongoDB Atlas programmatic API key with Org Owner (or equivalent) scope
 - One directory under `../orgs/<org-key>/` with populated `org.yaml`
-
-## Bootstrap
-
-```bash
-cd terraform/
-terraform init
-
-# One workspace per org. Name MUST match the orgs/<name>/ directory.
-terraform workspace new org1
-```
+- Terraform Cloud workspace
 
 ## HCP Terraform / Terraform Cloud
 
-This root is wired to TFC (`versions.tf` → `cloud` block, organization `wrtv23`). State and runs are managed by TFC.
+This root is wired to TFC (`versions.tf` → `cloud` block, organization `raven4ever`). State and runs are managed by TFC.
+
+> **Adjust to your TFC org.** The `cloud.organization` value in `versions.tf` is set to `raven4ever` for this POC. Change it to your own HCP Terraform / Terraform Cloud organization name before `terraform init`. The `workspaces.project` and `workspaces.tags.app` values are also free to rename — keep them consistent with whatever TFC Project + tag you create.
 
 ### One-time setup per org
 
@@ -41,17 +34,6 @@ terraform login   # one-time, opens browser, stores token in ~/.terraform.d/cred
 ```
 
 After login, `terraform init` + `terraform workspace select org1` + `terraform plan` runs against TFC.
-
-## Credentials (local fallback)
-
-Only needed if not using TFC workspace variables:
-
-```bash
-export TF_VAR_atlas_public_key=...
-export TF_VAR_atlas_private_key=...
-```
-
-Or copy `terraform.tfvars.example` to `terraform.tfvars` (gitignored).
 
 ## Plan / Apply
 

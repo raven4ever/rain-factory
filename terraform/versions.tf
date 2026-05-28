@@ -10,7 +10,7 @@ terraform {
 
 
   cloud {
-    organization = "wrtv23"
+    organization = "raven4ever"
 
     # CLI workspace name maps 1:1 to a TFC workspace tagged app=rain-factory
     # inside Project 'rain-factory'. Create one TFC workspace per org
