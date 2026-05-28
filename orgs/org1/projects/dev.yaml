@@ -9,30 +9,15 @@ clusters:
     backup: true
 
 users:
-  - username: app-dev
-    authType: SCRAM
-    roles:
-      - role: readWrite
-        database: app
-  - username: "arn:aws:iam::123456789012:role/dummy-atlas-readonly"
-    authType: AWS_IAM
-    awsIamType: ROLE
-    roles:
-      - role: read
-        database: app
-  - username: "arn:aws:iam::210987654321:role/dummy-atlas-readwrite"
-    authType: AWS_IAM
-    awsIamType: ROLE
-    roles:
-      - role: readWrite
-        database: app
-
-# Network overrides replace the template's ipAccessList entirely (no merge by .cidr).
-# Omit this block to inherit the template's allow list as-is.
-network:
-  ipAccessList:
-    - cidr: 10.0.0.0/8
-      comment: corp-vpn
+  read_only:
+    awsIamRoles:
+      - arn: "arn:aws:iam::123456789012:role/dummy-atlas-readonly"
+  read_write:
+    scram:
+      - username: app-dev
+        databases: ["my-database"]
+    awsIamRoles:
+      - arn: "arn:aws:iam::210987654321:role/dummy-atlas-readwrite"
 
 # Optional: pair the project with a customer AWS account via PrivateLink.
 # Two-phase apply — see terraform/README.md → "PrivateLink".

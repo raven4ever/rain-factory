@@ -44,16 +44,16 @@ resource "mongodbatlas_advanced_cluster" "this" {
         } : {}
       )
       ] : [{
-      # Legacy single-region path: top-level region/provider/instanceSize.
-      provider_name = each.value.provider
-      region_name   = each.value.region
-      priority      = 7
+        # Legacy single-region path: top-level region/provider/instanceSize.
+        provider_name = each.value.provider
+        region_name   = each.value.region
+        priority      = 7
 
-      electable_specs = {
-        instance_size = each.value.instanceSize
-        node_count    = 3
-        disk_size_gb  = each.value.diskSizeGB
-      }
+        electable_specs = {
+          instance_size = each.value.instanceSize
+          node_count    = 3
+          disk_size_gb  = each.value.diskSizeGB
+        }
     }]
   }]
 }

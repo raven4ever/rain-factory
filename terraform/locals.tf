@@ -54,19 +54,73 @@ locals {
     ]
   }
 
-  # Per-project: users merged by .username, same merge semantics.
+  # Per-project: users grouped by access level (read_only / read_write) and
+  # by auth type (scram / awsIamRoles). Group + subkey imply the Atlas role
+  # and authType. Per-user `databases:` optional — absent = readAnyDatabase /
+  # readWriteAnyDatabase on admin; present = per-db read / readWrite.
+  # Subkeys are independently overridable: project's `read_only.scram` replaces
+  # template's `read_only.scram` entirely; absent project subkeys fall back to
+  # template's. SCRAM users still require an entry in var.user_passwords.
   users_merged = {
     for env_key, p in local.projects :
-    env_key => [
-      for n in distinct(concat(
-        [for u in lookup(p, "users", []) : u.username],
-        [for u in lookup(lookup(local.templates, env_key, {}), "users", []) : u.username]
-      )) :
-      merge(
-        lookup({ for u in lookup(lookup(local.templates, env_key, {}), "users", []) : u.username => u }, n, {}),
-        lookup({ for u in lookup(p, "users", []) : u.username => u }, n, {})
-      )
-    ]
+    env_key => concat(
+      # read_only / SCRAM
+      [
+        for u in try(p.users.read_only.scram, lookup(local.templates, env_key, { users = { read_only = {} } }).users.read_only.scram, []) :
+        {
+          username   = u.username
+          authType   = "SCRAM"
+          awsIamType = null
+          roles = lookup(u, "databases", null) != null ? [
+            for db in u.databases : { role = "read", database = db }
+            ] : [
+            { role = "readAnyDatabase", database = "admin" }
+          ]
+        }
+      ],
+      # read_only / awsIamRoles
+      [
+        for u in try(p.users.read_only.awsIamRoles, lookup(local.templates, env_key, { users = { read_only = {} } }).users.read_only.awsIamRoles, []) :
+        {
+          username   = u.arn
+          authType   = "AWS_IAM"
+          awsIamType = "ROLE"
+          roles = lookup(u, "databases", null) != null ? [
+            for db in u.databases : { role = "read", database = db }
+            ] : [
+            { role = "readAnyDatabase", database = "admin" }
+          ]
+        }
+      ],
+      # read_write / SCRAM
+      [
+        for u in try(p.users.read_write.scram, lookup(local.templates, env_key, { users = { read_write = {} } }).users.read_write.scram, []) :
+        {
+          username   = u.username
+          authType   = "SCRAM"
+          awsIamType = null
+          roles = lookup(u, "databases", null) != null ? [
+            for db in u.databases : { role = "readWrite", database = db }
+            ] : [
+            { role = "readWriteAnyDatabase", database = "admin" }
+          ]
+        }
+      ],
+      # read_write / awsIamRoles
+      [
+        for u in try(p.users.read_write.awsIamRoles, lookup(local.templates, env_key, { users = { read_write = {} } }).users.read_write.awsIamRoles, []) :
+        {
+          username   = u.arn
+          authType   = "AWS_IAM"
+          awsIamType = "ROLE"
+          roles = lookup(u, "databases", null) != null ? [
+            for db in u.databases : { role = "readWrite", database = db }
+            ] : [
+            { role = "readWriteAnyDatabase", database = "admin" }
+          ]
+        }
+      ]
+    )
   }
 
   # Final per-project map after template merge. Downstream *_flat locals

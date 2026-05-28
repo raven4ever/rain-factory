@@ -32,7 +32,7 @@ This root is wired to TFC (`versions.tf` → `cloud` block, organization `wrtv23
    - `atlas_private_key`
    - `federation_settings_id`
    - `user_passwords` (HCL syntax, e.g. `{ "app-dev" = "..." }`)
-4. (CI only) Generate a user API token in TFC user settings. Save it as GitHub secret `TF_API_TOKEN`.
+5. (CI only) Generate a user API token in TFC user settings. Save it as GitHub secret `TF_API_TOKEN`.
 
 ### Local CLI auth
 
@@ -69,24 +69,28 @@ Each project YAML may declare an optional `privateLink` list. Each entry creates
 
 ```yaml
 privateLink:
-  - region: US_EAST_1            # Atlas region
+  - region: US_EAST_1 # Atlas region
     providerName: AWS
-    awsEndpointId: ""             # empty on first apply; "vpce-..." on second
+    awsEndpointId: "" # empty on first apply; "vpce-..." on second
 ```
 
 ### Two-phase apply
 
 **Phase 1 — create Atlas service.** Leave `awsEndpointId: ""`. Apply.
+
 ```bash
 terraform apply
 terraform output privatelink
 ```
+
 Output contains `endpoint_service_name` per region. Example:
+
 ```
 com.amazonaws.vpce.us-east-1.vpce-svc-0abc1234...
 ```
 
 **Phase 2 — customer creates AWS-side resources.** In the customer AWS account (any IaC or AWS Console):
+
 1. Create a security group: ingress from your allowed CIDRs on TCP 1024–65535, egress open
 2. Create an Interface VPC Endpoint targeting the Atlas `endpoint_service_name`, attached to your subnets and the SG
 3. Note the resulting `vpce-...` endpoint ID
@@ -102,6 +106,7 @@ Remove the `privateLink` entry from YAML and apply. Atlas-side service is destro
 Each project YAML may declare an optional `onlineArchive` list. Each entry creates a `mongodbatlas_online_archive` rule that tiers cold data from a cluster collection to cheaper storage based on a date field + TTL.
 
 **Requirements:**
+
 - Cluster instance size **M10 or higher** (Atlas restriction; M0/M2/M5 not supported)
 - Online Archive is a **paid Atlas feature** — billed per archived GB
 
@@ -109,13 +114,13 @@ Each project YAML may declare an optional `onlineArchive` list. Each entry creat
 
 ```yaml
 onlineArchive:
-  - clusterName: primary           # must match clusters[].name in this file
+  - clusterName: primary # must match clusters[].name in this file
     database: app
     collection: events
     dateField: createdAt
-    dateFormat: ISODATE             # or EPOCH_SECONDS (optional)
+    dateFormat: ISODATE # or EPOCH_SECONDS (optional)
     expireAfterDays: 90
-    partitionFields:                # optional, improves query performance on archive
+    partitionFields: # optional, improves query performance on archive
       - fieldName: tenantId
         order: 0
       - fieldName: createdAt
@@ -136,6 +141,7 @@ Remove the YAML entry and apply to delete an archive rule. Archived data restora
 Each project YAML may declare an optional `sqlFederation` list. Each entry creates a `mongodbatlas_federated_database_instance` (FDI) — a SQL-queryable virtual database that maps Atlas cluster collections to logical SQL schemas. Clients connect using the **Atlas SQL JDBC/ODBC driver** (not the standard MongoDB driver).
 
 **Requirements:**
+
 - Paid Atlas feature — billed per federation query volume + data transfer
 - Underlying Atlas clusters must already exist (referenced by `stores[].clusterName`)
 - Client tooling: Atlas SQL JDBC, Atlas SQL ODBC, Tableau Connector, or Power BI Connector
@@ -146,16 +152,16 @@ Each project YAML may declare an optional `sqlFederation` list. Each entry creat
 sqlFederation:
   - name: dev-fdi
     stores:
-      - name: primary-store          # logical name referenced by dataSources
-        clusterName: primary          # must match clusters[].name in this file
+      - name: primary-store # logical name referenced by dataSources
+        clusterName: primary # must match clusters[].name in this file
     databases:
-      - name: sql_app                 # logical SQL schema name
+      - name: sql_app # logical SQL schema name
         collections:
-          - name: events              # logical SQL "table" name
+          - name: events # logical SQL "table" name
             dataSources:
               - storeName: primary-store
-                database: app         # actual Atlas db name
-                collection: events    # actual Atlas collection name
+                database: app # actual Atlas db name
+                collection: events # actual Atlas collection name
 ```
 
 **Outputs:**
@@ -184,17 +190,17 @@ clusters:
     regions:
       - region: US_EAST_1
         provider: AWS
-        priority: 7              # preferred primary — exactly one region must be 7
+        priority: 7 # preferred primary — exactly one region must be 7
         instanceSize: M10
         electableNodes: 3
       - region: EU_WEST_1
         provider: AWS
-        priority: 6              # electable secondary
+        priority: 6 # electable secondary
         instanceSize: M10
         electableNodes: 2
       - region: US_WEST_2
         provider: AWS
-        priority: 0              # read-only tier (priority 0 cannot become primary)
+        priority: 0 # read-only tier (priority 0 cannot become primary)
         instanceSize: M10
         readOnlyNodes: 1
 ```
@@ -216,9 +222,9 @@ Application teams pick a template from `templates/` instead of authoring full cl
 
 ### Available templates
 
-| Template | Profile |
-|---|---|
-| `small-dev` | Single-region M10, 20GB, backup off |
+| Template        | Profile                                                    |
+| --------------- | ---------------------------------------------------------- |
+| `small-dev`     | Single-region M10, 20GB, backup off                        |
 | `production-ha` | Multi-region M30 (US_EAST_1 + EU_WEST_1), 100GB, backup on |
 
 Add new templates by dropping a YAML file into `templates/`. The file uses the same schema as a project YAML (minus the `template:` field).
@@ -232,18 +238,18 @@ template: small-dev
 
 clusters:
   - name: primary
-    diskSizeGB: 50         # overrides template's 20
-    backup: true            # overrides template's false
+    diskSizeGB: 50 # overrides template's 20
+    backup: true # overrides template's false
 ```
 
 ### Merge rules
 
-| Section | Strategy |
-|---|---|
-| Scalars / top-level fields | Project wins on overlap |
-| `clusters[]` | Merged by `.name`. Per-cluster fields: project wins. New cluster names append. |
-| `users[]` | Merged by `.username`. Same rules. |
-| `network`, `privateLink[]`, `onlineArchive[]`, `sqlFederation[]` | Project replaces template entirely if the key is declared |
+| Section                                                          | Strategy                                                                       |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Scalars / top-level fields                                       | Project wins on overlap                                                        |
+| `clusters[]`                                                     | Merged by `.name`. Per-cluster fields: project wins. New cluster names append. |
+| `users[]`                                                        | Merged by `.username`. Same rules.                                             |
+| `network`, `privateLink[]`, `onlineArchive[]`, `sqlFederation[]` | Project replaces template entirely if the key is declared                      |
 
 Note: list values inside a cluster (e.g. `regions[]`) are **not** deep-merged. Overriding `regions:` replaces the whole list.
 
@@ -258,16 +264,49 @@ Omit the `template:` field. Project YAML stands alone — no template load, no m
 3. Reference it from a project YAML by name (filename without `.yaml`)
 4. Run `terraform plan` to confirm merge resolves as expected
 
+## Users
+
+Users are declared per project by **access level**, then by **auth type**. Roles are inferred from the structure — no per-user `roles:` block.
+
+### Schema
+
+```yaml
+users:
+  read_only:
+    scram:
+      - username: app-ro
+    awsIamRoles:
+      - arn: "arn:aws:iam::123:role/ro-role"
+  read_write:
+    scram:
+      - username: app-rw
+        databases: [app] # optional per-user scope override
+    awsIamRoles:
+      - arn: "arn:aws:iam::210:role/rw-role"
+```
+
+### Role resolution
+
+| Access group | `databases:` absent               | `databases:` present   |
+| ------------ | --------------------------------- | ---------------------- |
+| `read_only`  | `readAnyDatabase` on `admin`      | `read` on each db      |
+| `read_write` | `readWriteAnyDatabase` on `admin` | `readWrite` on each db |
+
+`readAnyDatabase` / `readWriteAnyDatabase` are Atlas built-ins that cover all current and future databases. Use `databases:` only when access must be scoped.
+
+### Auth types
+
+| Subkey        | Atlas authType        | Identity field | Notes                                                                 |
+| ------------- | --------------------- | -------------- | --------------------------------------------------------------------- |
+| `scram`       | `SCRAM`               | `username`     | Password supplied via `TF_VAR_user_passwords` map keyed by `username` |
+| `awsIamRoles` | `AWS_IAM` (type ROLE) | `arn`          | The AWS role ARN is the Atlas username                                |
+
+AWS IAM Users and arbitrary Atlas roles (atlasAdmin, dbAdmin, etc.) are **not supported**. Route exceptions through the platform team.
+
+### Template merge
+
+Each subkey is independently overridable. `project.users.read_only.scram` replaces `template.users.read_only.scram` entirely; project subkeys absent fall back to the template's.
+
 ## Workspace Guard
 
 Root refuses to run in `default` workspace and refuses if `../orgs/<workspace>/org.yaml` is missing. Create a workspace whose name matches the org directory.
-
-## Phase Status
-
-| Phase | Scope | Status |
-|---|---|---|
-| 1 | Project resource + workspace guard + YAML discovery | DONE |
-| 2 | `mongodbatlas_advanced_cluster` | DONE |
-| 3 | DB users + IP access list | DONE |
-| 4 | Federation role mappings | DONE |
-| 5 | Remote state (S3 + DynamoDB) + CI | DONE (CI scaffolded; S3 backend remains commented until bucket provisioned) |
