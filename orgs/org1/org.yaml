@@ -4,5 +4,16 @@ federation:
   enabled: false
   roleMappings: []
 tags:
-  costCenter: "1234"
-  team: platform
+  application: "My Application"
+  appid: "e591458e1be61610376354e8624bcb4d"
+  environment: "dev"
+  security_classification: "restricted"
+  classification: "restricted"
+  role: "DBaaS"
+  businessowner: "mail@example.com"
+  supportowner: "mail@example.com"
+  ci_ownergroup: "MongoDB Atlas Support"
+  ci_supportgroup: "MongoDB Atlas Support"
+  tcode: "T-00000"
+  costcenter: "00000"
+  repo: "https://github.com/raven4ever/rain-factory"

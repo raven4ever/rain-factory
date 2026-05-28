@@ -15,6 +15,18 @@ users:
     roles:
       - role: readWrite
         database: app
+  - username: "arn:aws:iam::123456789012:role/dummy-atlas-readonly"
+    authType: AWS_IAM
+    awsIamType: ROLE
+    roles:
+      - role: read
+        database: app
+  - username: "arn:aws:iam::210987654321:role/dummy-atlas-readwrite"
+    authType: AWS_IAM
+    awsIamType: ROLE
+    roles:
+      - role: readWrite
+        database: app
 network:
   ipAccessList:
     - cidr: 10.0.0.0/8
