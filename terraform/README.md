@@ -18,9 +18,32 @@ terraform init
 terraform workspace new org1
 ```
 
-## Credentials
+## HCP Terraform / Terraform Cloud
 
-Source via env vars (preferred — keeps secrets off disk):
+This root is wired to TFC (`versions.tf` → `cloud` block, organization `wrtv23`). State and runs are managed by TFC.
+
+### One-time setup per org
+
+1. Create a TFC workspace named after the org-key (e.g. `org1`). The CLI workspace name must match exactly — `local.org_key = terraform.workspace` drives `orgs/<name>/org.yaml` lookup.
+2. Tag the workspace with `rain-factory` (matches the selector in `cloud.workspaces.tags`).
+3. Set workspace variables (Variables tab → Terraform variable, mark sensitive):
+   - `atlas_public_key`
+   - `atlas_private_key`
+   - `federation_settings_id`
+   - `user_passwords` (HCL syntax, e.g. `{ "app-dev" = "..." }`)
+4. (CI only) Generate a user API token in TFC user settings. Save it as GitHub secret `TF_API_TOKEN`.
+
+### Local CLI auth
+
+```bash
+terraform login   # one-time, opens browser, stores token in ~/.terraform.d/credentials.tfrc.json
+```
+
+After login, `terraform init` + `terraform workspace select org1` + `terraform plan` runs against TFC.
+
+## Credentials (local fallback)
+
+Only needed if not using TFC workspace variables:
 
 ```bash
 export TF_VAR_atlas_public_key=...

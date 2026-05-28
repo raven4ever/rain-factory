@@ -24,11 +24,14 @@ jobs:
     defaults:
       run:
         working-directory: terraform
+    env:
+      TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
     steps:
       - uses: actions/checkout@v6
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.15.5
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
       - run: terraform fmt -check -recursive
       - run: terraform init -backend=false
       - run: terraform validate
@@ -51,14 +54,17 @@ jobs:
       run:
         working-directory: terraform
     env:
-      TF_VAR_atlas_public_key: ${{ secrets.MONGODB_ATLAS_PUBLIC_KEY }}
-      TF_VAR_atlas_private_key: ${{ secrets.MONGODB_ATLAS_PRIVATE_KEY }}
-      TF_VAR_federation_settings_id: ${{ secrets.MONGODB_ATLAS_FEDERATION_SETTINGS_ID }}
+      # TFC API token (authenticates `terraform init` against app.terraform.io).
+      # All Atlas secrets (atlas_public_key, atlas_private_key,
+      # federation_settings_id, user_passwords) live in the TFC workspace as
+      # sensitive Terraform variables — not in GitHub secrets.
+      TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
     steps:
       - uses: actions/checkout@v6
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.15.5
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
       - run: terraform init
       - run: terraform workspace select ${{ matrix.org }} || terraform workspace new ${{ matrix.org }}
       - id: plan
