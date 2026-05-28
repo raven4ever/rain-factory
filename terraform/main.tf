@@ -19,6 +19,7 @@ resource "mongodbatlas_project" "this" {
 
   name   = each.value.name
   org_id = local.org.orgId
+  tags   = lookup(local.org, "tags", {})
 }
 
 resource "mongodbatlas_advanced_cluster" "this" {
@@ -29,6 +30,7 @@ resource "mongodbatlas_advanced_cluster" "this" {
   cluster_type           = lookup(each.value, "clusterType", "REPLICASET")
   mongo_db_major_version = each.value.mongoVersion
   backup_enabled         = each.value.backup
+  tags                   = lookup(local.org, "tags", {})
 
   replication_specs = [{
     region_configs = [{
