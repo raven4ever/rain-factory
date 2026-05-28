@@ -18,11 +18,6 @@ clusters:
     #     priority: 7
     #     instanceSize: M10
     #     electableNodes: 3
-    #   - region: EU_WEST_1
-    #     provider: AWS
-    #     priority: 6
-    #     instanceSize: M10
-    #     electableNodes: 2
     #   - region: US_WEST_2
     #     provider: AWS
     #     priority: 0
