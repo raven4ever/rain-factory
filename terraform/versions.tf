@@ -7,4 +7,9 @@ terraform {
       version = "~> 2.12"
     }
   }
+
+
+  cloud {
+    organization = "wrtv23"
+  }
 }
