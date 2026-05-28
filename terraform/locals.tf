@@ -5,8 +5,11 @@ locals {
   # fileset(): path arg may traverse via ..; pattern arg may not.
   org_file_path = "${path.module}/../orgs/${local.org_key}/org.yaml"
 
-  # try() so yamldecode doesn't panic before workspace_guard precondition fires.
-  org_raw = try(file(local.org_file_path), "{}")
+  # Fallback YAML keeps `terraform validate` happy when workspace_guard would
+  # otherwise block (e.g. CI running in 'default' workspace). Placeholder is
+  # never reached at apply time — guard precondition refuses default workspace
+  # and missing org.yaml before resources expand.
+  org_raw = try(file(local.org_file_path), "orgId: \"validate-only-placeholder\"\n")
   org     = yamldecode(local.org_raw)
 
   project_files = fileset("${path.module}/..", "orgs/${local.org_key}/projects/*.yaml")
