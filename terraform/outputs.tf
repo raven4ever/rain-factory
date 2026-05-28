@@ -21,26 +21,26 @@ output "privatelink" {
   }
 }
 
-# output "online_archives" {
-#   description = "Map of online archive key (env-cluster-db-coll) to archive ID."
-#   value = {
-#     for k, a in mongodbatlas_online_archive.this : k => a.archive_id
-#   }
-# }
+output "online_archives" {
+  description = "Map of online archive key (env-cluster-db-coll) to archive ID."
+  value = {
+    for k, a in mongodbatlas_online_archive.this : k => a.archive_id
+  }
+}
 
-# output "sql_federation" {
-#   description = "Map of Federated Database Instance key to name + hostnames. Use with Atlas SQL JDBC/ODBC driver."
-#   value = {
-#     for k, f in mongodbatlas_federated_database_instance.this : k => {
-#       name      = f.name
-#       hostnames = try(f.hostnames, null)
-#     }
-#   }
-# }
+output "sql_federation" {
+  description = "Map of Federated Database Instance key to name + hostnames. Use with Atlas SQL JDBC/ODBC driver."
+  value = {
+    for k, f in mongodbatlas_federated_database_instance.this : k => {
+      name      = f.name
+      hostnames = try(f.hostnames, null)
+    }
+  }
+}
 
-# output "clusters" {
-#   description = "Map of cluster key to SRV connection string (null until cluster created)."
-#   value = {
-#     for k, c in mongodbatlas_advanced_cluster.this : k => try(c.connection_strings.standard_srv, null)
-#   }
-# }
+output "clusters" {
+  description = "Map of cluster key to SRV connection string (null until cluster created)."
+  value = {
+    for k, c in mongodbatlas_advanced_cluster.this : k => try(c.connection_strings.standard_srv, null)
+  }
+}
