@@ -97,6 +97,40 @@ com.amazonaws.vpce.us-east-1.vpce-svc-0abc1234...
 
 Remove the `privateLink` entry from YAML and apply. Atlas-side service is destroyed. Customer must separately delete their AWS VPC endpoint and SG.
 
+## Online Archive
+
+Each project YAML may declare an optional `onlineArchive` list. Each entry creates a `mongodbatlas_online_archive` rule that tiers cold data from a cluster collection to cheaper storage based on a date field + TTL.
+
+**Requirements:**
+- Cluster instance size **M10 or higher** (Atlas restriction; M0/M2/M5 not supported)
+- Online Archive is a **paid Atlas feature** — billed per archived GB
+
+**YAML:**
+
+```yaml
+onlineArchive:
+  - clusterName: primary           # must match clusters[].name in this file
+    database: app
+    collection: events
+    dateField: createdAt
+    dateFormat: ISODATE             # or EPOCH_SECONDS (optional)
+    expireAfterDays: 90
+    partitionFields:                # optional, improves query performance on archive
+      - fieldName: tenantId
+        order: 0
+      - fieldName: createdAt
+        order: 1
+```
+
+**Outputs:**
+
+```bash
+terraform output online_archives
+# { "dev-primary-app-events" = "<archive-id>" }
+```
+
+Remove the YAML entry and apply to delete an archive rule. Archived data restoration is Atlas-side (out of Terraform).
+
 ## Workspace Guard
 
 Root refuses to run in `default` workspace and refuses if `../orgs/<workspace>/org.yaml` is missing. Create a workspace whose name matches the org directory.

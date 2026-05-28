@@ -51,4 +51,15 @@ locals {
       "${env_key}-${pl.region}" => merge(pl, { envKey = env_key })
     }
   ]...)
+
+  # Online Archive rules. Optional per-project. Each entry archives a
+  # collection's cold data based on a date field + TTL. Requires M10+ cluster.
+  # Cluster reference resolved by clusterName matching clusters[].name in the
+  # same project YAML; flattening key includes db+coll for uniqueness.
+  online_archive_flat = merge([
+    for env_key, p in local.projects : {
+      for oa in lookup(p, "onlineArchive", []) :
+      "${env_key}-${oa.clusterName}-${oa.database}-${oa.collection}" => merge(oa, { envKey = env_key })
+    }
+  ]...)
 }

@@ -21,6 +21,13 @@ output "privatelink" {
   }
 }
 
+output "online_archives" {
+  description = "Map of online archive key (env-cluster-db-coll) to archive ID."
+  value = {
+    for k, a in mongodbatlas_online_archive.this : k => a.archive_id
+  }
+}
+
 output "clusters" {
   description = "Map of cluster key to SRV connection string (null until cluster created)."
   value = {

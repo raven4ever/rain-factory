@@ -38,3 +38,17 @@ network:
 #   - region: US_EAST_1            # Atlas region
 #     providerName: AWS
 #     awsEndpointId: ""             # paste "vpce-..." after creating the AWS VPC endpoint
+
+# Optional: Online Archive rules. Requires M10+ cluster.
+# onlineArchive:
+#   - clusterName: primary          # references clusters[].name in this file
+#     database: app
+#     collection: events
+#     dateField: createdAt
+#     dateFormat: ISODATE            # or EPOCH_SECONDS
+#     expireAfterDays: 90
+#     partitionFields:
+#       - fieldName: tenantId
+#         order: 0
+#       - fieldName: createdAt
+#         order: 1
