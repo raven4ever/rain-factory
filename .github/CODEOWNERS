@@ -1,0 +1,20 @@
+# CODEOWNERS — GitHub auto-requests review from listed owners when matching
+# paths change in a PR. Patterns are evaluated bottom-to-top; the last
+# matching rule wins. Replace placeholder team handles with real ones.
+
+# Default — anything not matched below
+*                       @platform-team
+
+# Terraform root: shared infra code. Platform owns.
+/terraform/             @platform-team
+
+# Templates: changes affect ALL consuming projects. Platform + security review.
+/templates/             @platform-team
+
+# CI / workflows
+/.github/               @platform-team
+
+# Per-org configuration: each app team owns its own org directory.
+# Add a new line per org and update the team handle.
+/orgs/org1/             @org1-app-team
+/orgs/org2/             @org2-app-team
