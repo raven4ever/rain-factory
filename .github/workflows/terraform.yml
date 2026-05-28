@@ -3,14 +3,15 @@ name: Terraform
 on:
   pull_request:
     paths:
-      - 'terraform/**'
-      - 'orgs/**'
-      - '.github/workflows/terraform.yml'
+      - "terraform/**"
+      - "orgs/**"
+      - ".github/workflows/terraform.yml"
   push:
     branches: [main]
     paths:
-      - 'terraform/**'
-      - 'orgs/**'
+      - "terraform/**"
+      - "orgs/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -24,8 +25,8 @@ jobs:
       run:
         working-directory: terraform
     steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
+      - uses: actions/checkout@v6
+      - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.15.5
       - run: terraform fmt -check -recursive
@@ -54,8 +55,8 @@ jobs:
       TF_VAR_atlas_private_key: ${{ secrets.MONGODB_ATLAS_PRIVATE_KEY }}
       TF_VAR_federation_settings_id: ${{ secrets.MONGODB_ATLAS_FEDERATION_SETTINGS_ID }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
+      - uses: actions/checkout@v6
+      - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.15.5
       - run: terraform init
