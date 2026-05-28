@@ -1,0 +1,71 @@
+name: org2-prd
+
+clusters:
+  - name: primary
+    mongoVersion: "7.0"
+    diskSizeGB: 100
+    backup: true
+    regions:
+      - region: US_EAST_1
+        provider: AWS
+        priority: 7
+        instanceSize: M30
+        electableNodes: 3
+      - region: US_WEST_2
+        provider: AWS
+        priority: 6
+        instanceSize: M30
+        electableNodes: 2
+
+network:
+  ipAccessList:
+    - cidr: 10.0.0.0/8
+      comment: corp-vpn
+
+users:
+  read_only:
+    awsIamRoles:
+      - arn: "arn:aws:iam::123456789012:role/dummy-atlas-readonly"
+  read_write:
+    scram:
+      - username: app-dev
+        databases: ["my-database"]
+    awsIamRoles:
+      - arn: "arn:aws:iam::210987654321:role/dummy-atlas-readwrite"
+
+# Optional: pair the project with a customer AWS account via PrivateLink.
+# Two-phase apply — see terraform/README.md → "PrivateLink".
+# privateLink:
+#   - region: US_EAST_1            # Atlas region
+#     providerName: AWS
+#     awsEndpointId: ""             # paste "vpce-..." after creating the AWS VPC endpoint
+
+# Optional: Online Archive rules. Requires M10+ cluster.
+# onlineArchive:
+#   - clusterName: primary          # references clusters[].name in this file
+#     database: app
+#     collection: events
+#     dateField: createdAt
+#     dateFormat: ISODATE            # or EPOCH_SECONDS
+#     expireAfterDays: 90
+#     partitionFields:
+#       - fieldName: tenantId
+#         order: 0
+#       - fieldName: createdAt
+#         order: 1
+
+# Optional: Atlas SQL Interface via Data Federation. Paid Atlas feature.
+# Connect using the Atlas SQL JDBC/ODBC driver (not the standard mongo driver).
+# sqlFederation:
+#   - name: dev-fdi
+#     stores:
+#       - name: primary-store
+#         clusterName: primary       # references clusters[].name in this file
+#     databases:
+#       - name: sql_app
+#         collections:
+#           - name: events
+#             dataSources:
+#               - storeName: primary-store
+#                 database: app
+#                 collection: events

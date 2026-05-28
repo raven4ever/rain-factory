@@ -4,8 +4,7 @@ federation:
   roleMappings: []
 tags:
   application: "My Application"
-  appid: "e591458e1be61610376354e8624bcb4d"
-  environment: "dev"
+  appid: "12345678901234567890123456789012345"
   security_classification: "restricted"
   classification: "restricted"
   role: "DBaaS"

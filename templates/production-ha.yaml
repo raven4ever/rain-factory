@@ -11,7 +11,7 @@ clusters:
         priority: 7
         instanceSize: M30
         electableNodes: 3
-      - region: US_WEST_@
+      - region: US_WEST_2
         provider: AWS
         priority: 6
         instanceSize: M30

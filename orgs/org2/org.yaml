@@ -1,0 +1,16 @@
+orgId: "62f50bc97cf23972ed8a57e5"
+federation:
+  enabled: false
+  roleMappings: []
+tags:
+  application: "Secondary Application"
+  appid: "12345678901234567890123456789012345"
+  security_classification: "restricted"
+  classification: "restricted"
+  role: "DBaaS"
+  businessowner: "mail@example.com"
+  supportowner: "mail@example.com"
+  ci_ownergroup: "MongoDB Atlas Support"
+  ci_supportgroup: "MongoDB Atlas Support"
+  tcode: "T-00000"
+  costcenter: "00000"
