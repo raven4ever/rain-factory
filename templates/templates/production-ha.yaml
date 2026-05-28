@@ -1,0 +1,23 @@
+# Production HA template. Multi-region replica set, backup on, M30.
+# Used by projects that declare `template: production-ha` in their YAML.
+clusters:
+  - name: primary
+    mongoVersion: "7.0"
+    diskSizeGB: 100
+    backup: true
+    regions:
+      - region: US_EAST_1
+        provider: AWS
+        priority: 7
+        instanceSize: M30
+        electableNodes: 3
+      - region: US_WEST_@
+        provider: AWS
+        priority: 6
+        instanceSize: M30
+        electableNodes: 2
+
+network:
+  ipAccessList:
+    - cidr: 10.0.0.0/8
+      comment: corp-vpn

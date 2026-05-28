@@ -1,43 +1,32 @@
-name: Terraform
+name: Terraform fmt
 
-# VCS-connected TFC workspaces auto-trigger speculative plans on PR and
-# plans on push-to-main via webhook from GitHub. This workflow does NOT
-# run `terraform plan` — TFC owns plan/apply. GHA only enforces fmt and
-# validate as fast pre-flight checks so obvious syntax errors fail before
-# TFC ever picks up the commit.
+# TFC speculative plans (via VCS integration) run validate + plan and post
+# their status to the PR. This workflow only enforces `terraform fmt`, which
+# TFC does NOT check. No TFC token, no init, no network.
 
 on:
   pull_request:
     paths:
       - "terraform/**"
-      - "orgs/**"
       - ".github/workflows/terraform.yml"
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - "terraform/**"
-      - "orgs/**"
 
 permissions:
   contents: read
 
 jobs:
-  lint:
-    name: fmt + validate
+  fmt:
+    name: terraform fmt -check
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: terraform
-    env:
-      # Required because the `cloud {}` block in versions.tf forces
-      # `terraform init` to contact app.terraform.io even with -backend=false.
-      TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
     steps:
       - uses: actions/checkout@v6
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.15.5
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
       - run: terraform fmt -check -recursive
-      - run: terraform init -backend=false
-      - run: terraform validate

@@ -1,28 +1,13 @@
 name: org1-dev
-env: dev
-awsAccount: "123456789012"
+template: small-dev
+
+# Cluster overrides (merged by .name against the template's clusters[]).
+# Template small-dev defines primary as M10 / 20GB / backup=false; here we
+# bump disk and enable backup. Other cluster fields inherit from template.
 clusters:
-  - name: primary
-    provider: AWS
-    region: US_EAST_1
-    instanceSize: M10
-    mongoVersion: "7.0"
-    diskSizeGB: 20
+  - name: my-super-cluster
     backup: true
-    # Optional multi-region replica set. When `regions:` is present, the
-    # top-level provider/region/instanceSize are ignored. Exactly one region
-    # must have priority=7; sum of electableNodes across regions should be odd.
-    # regions:
-    #   - region: US_EAST_1
-    #     provider: AWS
-    #     priority: 7
-    #     instanceSize: M10
-    #     electableNodes: 3
-    #   - region: US_WEST_2
-    #     provider: AWS
-    #     priority: 0
-    #     instanceSize: M10
-    #     readOnlyNodes: 1
+
 users:
   - username: app-dev
     authType: SCRAM
@@ -41,6 +26,9 @@ users:
     roles:
       - role: readWrite
         database: app
+
+# Network overrides replace the template's ipAccessList entirely (no merge by .cidr).
+# Omit this block to inherit the template's allow list as-is.
 network:
   ipAccessList:
     - cidr: 10.0.0.0/8
@@ -55,7 +43,7 @@ network:
 
 # Optional: Online Archive rules. Requires M10+ cluster.
 # onlineArchive:
-#   - clusterName: primary          # references clusters[].name in this file
+#   - clusterName: my-super-cluster          # references clusters[].name in this file
 #     database: app
 #     collection: events
 #     dateField: createdAt
@@ -73,7 +61,7 @@ network:
 #   - name: dev-fdi
 #     stores:
 #       - name: primary-store
-#         clusterName: primary       # references clusters[].name in this file
+#         clusterName: my-super-cluster       # references clusters[].name in this file
 #     databases:
 #       - name: sql_app
 #         collections:

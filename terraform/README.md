@@ -210,6 +210,54 @@ clusters:
 
 Cross-region clusters add latency and inter-region traffic cost. Use only for production HA needs.
 
+## Project Templates
+
+Application teams pick a template from `templates/` instead of authoring full cluster/network/user configs from scratch. The team declares `template: <name>` in their project YAML and overrides only the fields that differ.
+
+### Available templates
+
+| Template | Profile |
+|---|---|
+| `small-dev` | Single-region M10, 20GB, backup off |
+| `production-ha` | Multi-region M30 (US_EAST_1 + EU_WEST_1), 100GB, backup on |
+
+Add new templates by dropping a YAML file into `templates/`. The file uses the same schema as a project YAML (minus the `template:` field).
+
+### Using a template
+
+```yaml
+# orgs/<org>/projects/<env>.yaml
+name: org1-dev
+template: small-dev
+
+clusters:
+  - name: primary
+    diskSizeGB: 50         # overrides template's 20
+    backup: true            # overrides template's false
+```
+
+### Merge rules
+
+| Section | Strategy |
+|---|---|
+| Scalars / top-level fields | Project wins on overlap |
+| `clusters[]` | Merged by `.name`. Per-cluster fields: project wins. New cluster names append. |
+| `users[]` | Merged by `.username`. Same rules. |
+| `network`, `privateLink[]`, `onlineArchive[]`, `sqlFederation[]` | Project replaces template entirely if the key is declared |
+
+Note: list values inside a cluster (e.g. `regions[]`) are **not** deep-merged. Overriding `regions:` replaces the whole list.
+
+### Without a template
+
+Omit the `template:` field. Project YAML stands alone — no template load, no merge.
+
+### Authoring a new template
+
+1. Create `templates/<name>.yaml` matching the project YAML schema (no `template:` field)
+2. Define sensible defaults for the profile
+3. Reference it from a project YAML by name (filename without `.yaml`)
+4. Run `terraform plan` to confirm merge resolves as expected
+
 ## Workspace Guard
 
 Root refuses to run in `default` workspace and refuses if `../orgs/<workspace>/org.yaml` is missing. Create a workspace whose name matches the org directory.

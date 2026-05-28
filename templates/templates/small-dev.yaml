@@ -1,0 +1,15 @@
+# Small dev / sandbox template. Minimal cost, no HA.
+# Used by projects that declare `template: small-dev` in their YAML.
+clusters:
+  - name: primary
+    provider: AWS
+    region: US_EAST_1
+    instanceSize: M10
+    mongoVersion: "7.0"
+    diskSizeGB: 20
+    backup: false
+
+network:
+  ipAccessList:
+    - cidr: 10.0.0.0/8
+      comment: corp-vpn
