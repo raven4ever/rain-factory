@@ -12,13 +12,13 @@ terraform {
   cloud {
     organization = "wrtv23"
 
-    # CLI workspace name maps 1:1 to a TFC workspace tagged 'rain-factory'.
-    # Create one TFC workspace per org (name = "org1", "org2", ...) and tag
-    # each with "rain-factory". `terraform workspace select <name>` switches
-    # between them; `terraform.workspace` returns that name, which locals.tf
-    # uses to load orgs/<name>/org.yaml.
+    # CLI workspace name maps 1:1 to a TFC workspace inside Project
+    # 'rain-factory'. Create one TFC workspace per org (name = "org1",
+    # "org2", ...) inside that Project. `terraform workspace select <name>`
+    # switches between them; `terraform.workspace` returns that name, which
+    # locals.tf uses to load orgs/<name>/org.yaml.
     workspaces {
-      tags = ["rain-factory"]
+      project = "rain-factory"
     }
   }
 }

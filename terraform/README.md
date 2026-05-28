@@ -24,8 +24,8 @@ This root is wired to TFC (`versions.tf` → `cloud` block, organization `wrtv23
 
 ### One-time setup per org
 
-1. Create a TFC workspace named after the org-key (e.g. `org1`). The CLI workspace name must match exactly — `local.org_key = terraform.workspace` drives `orgs/<name>/org.yaml` lookup.
-2. Tag the workspace with `rain-factory` (matches the selector in `cloud.workspaces.tags`).
+1. Create a TFC Project named **`rain-factory`** (Settings → Projects → New project).
+2. Create a workspace inside that Project, named after the org-key (e.g. `org1`). The CLI workspace name must match exactly — `local.org_key = terraform.workspace` drives `orgs/<name>/org.yaml` lookup.
 3. Set workspace variables (Variables tab → Terraform variable, mark sensitive):
    - `atlas_public_key`
    - `atlas_private_key`
